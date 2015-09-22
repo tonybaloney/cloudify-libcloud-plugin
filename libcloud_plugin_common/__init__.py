@@ -358,8 +358,7 @@ class Mapper(object):
             return EC2LibcloudFloatingIPClient()\
                 .get(mapper=self, config=config)
         elif self.core_provider == Provider.DIMENSIONDATA:
-            from dimensiondata import DimensionDataLibcloudFloatingIPClient
-            return DimensionDataLibcloudFloatingIPClient()\
+            return LibcloudFloatingIPClient()\
                 .get(mapper=self, config=config)
 
     def get_security_group_client(self, config):
@@ -368,8 +367,7 @@ class Mapper(object):
             return EC2LibcloudSecurityGroupClient()\
                 .get(mapper=self, config=config)
         elif self.core_provider == Provider.DIMENSIONDATA:
-            from dimensiondata import DimensionDataLibcloudSecurityGroupClient
-            return DimensionDataLibcloudSecurityGroupClient()\
+            return LibcloudSecurityGroupClient()\
                 .get(mapper=self, config=config)
 
     def get_provider_context(self, context):
@@ -377,5 +375,4 @@ class Mapper(object):
             from ec2 import EC2LibcloudProviderContext
             return EC2LibcloudProviderContext(context)
         elif self.core_provider == Provider.DIMENSIONDATA:
-            from dimensiondata import DimensionDataLibcloudProviderContext
-            return DimensionDataLibcloudProviderContext(context)
+            return LibcloudProviderContext(context)

@@ -40,7 +40,7 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
         self.driver.ex_start_node(server)
 
     def stop_server(self, server):
-        self.driver.ex_stop_node(server)
+        self.driver.ex_shutdown_graceful(server)
 
     def delete_server(self, server):
         self.driver.destroy_node(server)
@@ -78,17 +78,8 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
         self.driver.ex_disassociate_address(ip)
 
     def get_image_by_name(self, image_name):
-        images = self.driver.list_images(ex_image_ids=[image_name])
-        if images:
-            if images[0]:
-                return images[0]
-
-    def get_size_by_name(self, size_name):
-        sizes = self.driver.list_sizes()
-        if sizes:
-            for item in sizes:
-                if item.id == size_name:
-                    return item
+        return list(filter(lambda x: x.name == image_name,
+                           self.driver.list_images()))[0]
 
     def is_server_active(self, server):
         return server.state == NodeState.RUNNING
@@ -107,120 +98,20 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
             image = self.get_image_by_name(server_context['image_name'])
         else:
             raise NonRecoverableError("Image is a required parameter")
-        if 'size_name' in server_context:
-            size = self.get_size_by_name(server_context['size_name'])
+
+        if 'network_name' in server_context:
+            network_name = server_context['network_name']
         else:
-            raise NonRecoverableError("Size is a required parameter")
+            raise NonRecoverableError("Key is a required parameter")
 
-        security_groups = map(rename,
-                              server_context.get('security_groups', []))
-        if provider_context.agents_security_group:
-            asg = provider_context.agents_security_group['name']
-            if asg not in security_groups:
-                security_groups.append(asg)
-
-        if 'key_name' in server_context:
-            key_name = rename(server_context['key_name'])
+        if 'node_description' in server_context:
+            description = server_context['node_description']
         else:
-            if provider_context.agents_keypair:
-                key_name = provider_context.agents_keypair['name']
-            else:
-                raise NonRecoverableError("Key is a required parameter")
-
-        ctx.logger.error(security_groups)
+            description = ''
 
         node = self.driver.create_node(name=name,
                                        image=image,
-                                       size=size,
-                                       ex_keyname=key_name,
-                                       ex_security_groups=security_groups)
+                                       ex_description=description,
+                                       ex_network=network_name)
         return node
 
-
-class DimensionDataLibcloudFloatingIPClient(LibcloudFloatingIPClient):
-
-    def delete(self, ip):
-        self.driver.ex_disassociate_address(ip)
-        self.driver.ex_release_address(ip)
-
-    def create(self, **kwargs):
-        return self.driver.ex_allocate_address()
-
-    def get_by_ip(self, ip):
-        addresses = self.driver.ex_describe_all_addresses()
-        for address in addresses:
-            if address.ip == ip:
-                return address
-
-
-class DimensionDataLibcloudSecurityGroupClient(LibcloudSecurityGroupClient):
-
-    def create(self, security_group):
-        sg = self.driver.ex_create_security_group(
-            security_group['name'], security_group['description'])
-        return sg
-
-    def delete(self, id):
-        self.driver.ex_delete_security_group_by_id(id)
-
-    def get_list_by_name(self, name):
-        try:
-            return self.driver.ex_get_security_groups(group_names=[name])
-        except:
-            return None
-
-    def get_description(self, sg):
-        return sg.extra['description']
-
-    def get_id(self, sg):
-        if isinstance(sg, dict):
-            return sg['group_id']
-        else:
-            return sg.id
-
-    def get_rules(self, sg):
-        result = []
-        for rule in sg.ingress_rules:
-            sgr = {
-                'direction': 'ingress',
-                'port_range_max': rule['to_port'],
-                'port_range_min': rule['from_port'],
-                'protocol': rule['protocol'],
-                'remote_group_id': None,
-                'remote_ip_prefix': '0.0.0.0/0',
-            }
-            if 'group_pairs' in rule:
-                if len(rule['group_pairs']) > 0:
-                    sgr['remote_group_id'] = rule['group_pairs'][0]['group_id']
-                    del sgr['remote_ip_prefix']
-            if 'cidr_ips' in rule:
-                if len(rule['cidr_ips']) > 0:
-                    sgr['remote_ip_prefix'] = rule['cidr_ips'][0]
-                    del sgr['remote_group_id']
-            result.append(sgr)
-        return result
-
-    def create_security_group_rule(self, rule):
-        if 'remote_ip_prefix' in rule:
-            self.driver.ex_authorize_security_group_ingress(
-                rule['security_group_id'],
-                rule['port_range_min'],
-                rule['port_range_max'],
-                cidr_ips=[rule['remote_ip_prefix']])
-        elif 'group_id' in rule:
-            self.driver.ex_authorize_security_group_ingress(
-                rule['security_group_id'],
-                rule['port_range_min'],
-                rule['port_range_max'],
-                group_pairs=[{'group_id': rule['remote_group_id']}])
-
-
-class DimensionDataLibcloudProviderContext(LibcloudProviderContext):
-
-    @property
-    def agents_security_group(self):
-        return self._resources.get('agents_security_group')
-
-    @property
-    def agents_keypair(self):
-        return self._resources.get('agents_keypair')
