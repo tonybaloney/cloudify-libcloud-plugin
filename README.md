@@ -1,7 +1,11 @@
 cloudify-libcloud-plugin
 ========================
 
-Cloudify (EC2) Libcloud plugin
+Cloudify Libcloud plugin
+
+Supports drivers
+- Amazon AWS EC2
+- Dimension Data Cloud
 
 ## Usage
 

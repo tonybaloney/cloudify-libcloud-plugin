@@ -326,6 +326,9 @@ class Mapper(object):
         elif provider_name == Provider.EC2_US_WEST_OREGON:
             self.core_provider = Provider.EC2
             self.provider = Provider.EC2_US_WEST_OREGON
+        elif provider_name == Provider.DIMENSIONDATA:
+            self.core_provider = Provider.DIMENSIONDATA
+            self.provider = Provider.DIMENSIONDATA
         else:
             raise NonRecoverableError('Error during trying to choose'
                                       ' the Libcloud provider,'
@@ -336,16 +339,27 @@ class Mapper(object):
         if self.core_provider == Provider.EC2:
             return get_driver(self.provider)(connection_config['access_id'],
                                              connection_config['secret_key'])
+        if self.core_provider == Provider.DIMENSIONDATA:
+            return get_driver(self.provider)(connection_config['access_id'],
+                                             connection_config['secret_key'],
+                                             connection_config['region_code'])
 
     def get_server_client(self, config):
         if self.core_provider == Provider.EC2:
             from ec2 import EC2LibcloudServerClient
             return EC2LibcloudServerClient().get(mapper=self, config=config)
+        elif self.core_provider == Provider.DIMENSIONDATA:
+            from dimensiondata import DimensionDataLibcloudServerClient
+            return DimensionDataLibcloudServerClient().get(mapper=self, config=config)
 
     def get_floating_ip_client(self, config):
         if self.core_provider == Provider.EC2:
             from ec2 import EC2LibcloudFloatingIPClient
             return EC2LibcloudFloatingIPClient()\
+                .get(mapper=self, config=config)
+        elif self.core_provider == Provider.DIMENSIONDATA:
+            from dimensiondata import DimensionDataLibcloudFloatingIPClient
+            return DimensionDataLibcloudFloatingIPClient()\
                 .get(mapper=self, config=config)
 
     def get_security_group_client(self, config):
@@ -353,8 +367,15 @@ class Mapper(object):
             from ec2 import EC2LibcloudSecurityGroupClient
             return EC2LibcloudSecurityGroupClient()\
                 .get(mapper=self, config=config)
+        elif self.core_provider == Provider.DIMENSIONDATA:
+            from dimensiondata import DimensionDataLibcloudSecurityGroupClient
+            return DimensionDataLibcloudSecurityGroupClient()\
+                .get(mapper=self, config=config)
 
     def get_provider_context(self, context):
         if self.core_provider == Provider.EC2:
             from ec2 import EC2LibcloudProviderContext
             return EC2LibcloudProviderContext(context)
+        elif self.core_provider == Provider.DIMENSIONDATA:
+            from dimensiondata import DimensionDataLibcloudProviderContext
+            return DimensionDataLibcloudProviderContext(context)
