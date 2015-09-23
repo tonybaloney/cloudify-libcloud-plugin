@@ -51,6 +51,7 @@ node_templates:
         network_name: { get_input: network_name }
         node_description: { get_input: node_description }
         ip: { get_input: host_ip }
+      install_agent: false
       cloudify_agent:
         user: { get_input: agent_user }
         key: { get_input: agent_private_key_path }

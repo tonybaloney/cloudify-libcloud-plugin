@@ -22,7 +22,7 @@ from libcloud_plugin_common import (LibcloudServerClient,
                                     LibcloudSecurityGroupClient,
                                     transform_resource_name,
                                     LibcloudProviderContext)
-
+from libcloud.compute.base import NodeAuthPassword
 
 class DimensionDataLibcloudServerClient(LibcloudServerClient):
 
@@ -94,20 +94,26 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
         if 'image_name' in server_context:
             image = self.get_image_by_name(server_context['image_name'])
         else:
-            raise NonRecoverableError("Image is a required parameter")
+            raise NonRecoverableError("Image name is a required parameter")
 
         if 'network_name' in server_context:
             network_name = server_context['network_name']
         else:
-            raise NonRecoverableError("Key is a required parameter")
+            raise NonRecoverableError("Network name is a required parameter")
 
         if 'node_description' in server_context:
             description = server_context['node_description']
         else:
             description = ''
 
+        if 'node_password' in server_context:
+            auth_obj = NodeAuthPassword(server_context['node_password'])
+        else:
+            raise NonRecoverableError("node_password is a required parameter")
+
         node = self.driver.create_node(name=name,
                                        image=image,
+                                       auth=auth_obj,
                                        ex_description=description,
                                        ex_network=network_name)
         return node
