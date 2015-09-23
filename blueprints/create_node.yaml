@@ -26,6 +26,9 @@ inputs:
   image_name:
     description: >
       Name of the base image to use
+  location:
+    description: >
+      The data center ID (e.g. NA9)
 
 node_templates:
   host:
@@ -37,6 +40,7 @@ node_templates:
         network_name: { get_input: network_name }
         node_description: { get_input: node_description }
         node_password: { get_input: node_password }
+        location: { get_input: location }
       install_agent: false
       cloudify_agent:
         user: { get_input: agent_user }
