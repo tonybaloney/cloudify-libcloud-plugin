@@ -77,13 +77,13 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
     def disconnect_floating_ip(self, ip):
         self.driver.ex_disassociate_address(ip)
 
-    def get_image_by_name(self, image_name):
+    def get_image_by_name(self, image_name, location):
         return list(filter(lambda x: x.name == image_name,
-                           self.driver.list_images()))[0]
+                           self.driver.list_images(location=location)))[0]
 
-    def get_network_by_name(self, network_name):
+    def get_network_by_name(self, network_name, location):
         return list(filter(lambda x: x.name == network_name,
-                           self.driver.list_networks()))[0]
+                           self.driver.list_networks(location=location)))[0]
 
     def is_server_active(self, server):
         return server.state == NodeState.RUNNING
@@ -95,13 +95,21 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
             server_context,
             provider_context):
 
+        if 'location' in server_context:
+            location = self.driver.ex_get_location_by_id(
+                server_context['location'])
+        else:
+            raise NonRecoverableError("Location is a required parameter")
+
         if 'image_name' in server_context:
-            image = self.get_image_by_name(server_context['image_name'])
+            image = self.get_image_by_name(server_context['image_name'],
+                                           location)
         else:
             raise NonRecoverableError("Image name is a required parameter")
 
         if 'network_name' in server_context:
-            network = self.get_network_by_name(server_context['network_name'])
+            network = self.get_network_by_name(server_context['network_name'],
+                                               location)
         else:
             raise NonRecoverableError("Network name is a required parameter")
 
