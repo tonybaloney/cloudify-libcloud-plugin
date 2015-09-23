@@ -350,7 +350,8 @@ class Mapper(object):
             return EC2LibcloudServerClient().get(mapper=self, config=config)
         elif self.core_provider == Provider.DIMENSIONDATA:
             from dimensiondata import DimensionDataLibcloudServerClient
-            return DimensionDataLibcloudServerClient().get(mapper=self, config=config)
+            return DimensionDataLibcloudServerClient() \
+                .get(mapper=self, config=config)
 
     def get_floating_ip_client(self, config):
         if self.core_provider == Provider.EC2:

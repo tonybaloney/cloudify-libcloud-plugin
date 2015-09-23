@@ -91,9 +91,6 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
             server_context,
             provider_context):
 
-        def rename(name):
-            return transform_resource_name(name, ctx)
-
         if 'image_name' in server_context:
             image = self.get_image_by_name(server_context['image_name'])
         else:
@@ -114,4 +111,3 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
                                        ex_description=description,
                                        ex_network=network_name)
         return node
-
