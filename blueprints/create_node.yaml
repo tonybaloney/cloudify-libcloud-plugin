@@ -45,11 +45,12 @@ node_templates:
         access_id: { get_input: api_username }
         secret_key: { get_input: api_password }
         region: { get_input: target_region }
-      name: { get_input: vm_name }
-      image_name: { get_input: image_name }
-      network_name: { get_input: network_name }
-      node_description: { get_input: node_description }
-      ip: { get_input: host_ip }
+      server:
+        name: { get_input: vm_name }
+        image_name: { get_input: image_name }
+        network_name: { get_input: network_name }
+        node_description: { get_input: node_description }
+        ip: { get_input: host_ip }
       cloudify_agent:
         user: { get_input: agent_user }
         key: { get_input: agent_private_key_path }
