@@ -81,6 +81,10 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
         return list(filter(lambda x: x.name == image_name,
                            self.driver.list_images()))[0]
 
+    def get_network_by_name(self, network_name):
+        return list(filter(lambda x: x.name == network_name,
+                           self.driver.list_networks()))[0]
+
     def is_server_active(self, server):
         return server.state == NodeState.RUNNING
 
@@ -97,7 +101,7 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
             raise NonRecoverableError("Image name is a required parameter")
 
         if 'network_name' in server_context:
-            network_name = server_context['network_name']
+            network = self.get_network_by_name(server_context['network_name'])
         else:
             raise NonRecoverableError("Network name is a required parameter")
 
@@ -115,5 +119,5 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
                                        image=image,
                                        auth=auth_obj,
                                        ex_description=description,
-                                       ex_network=network_name)
+                                       ex_network=network)
         return node
