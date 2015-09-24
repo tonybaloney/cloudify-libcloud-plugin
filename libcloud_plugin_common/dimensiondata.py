@@ -79,17 +79,21 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
 
     def get_image_by_name(self, image_name, location):
         images = self.driver.list_images(location=location)
-        if len(images) == 0:
+        images_filtered = \
+            list(filter(lambda x: x.name == image_name, images))
+        if len(images_filtered) == 0:
             raise NonRecoverableError("Could not find image %s" % image_name)
 
-        return list(filter(lambda x: x.name == image_name, images))[0]
+        return images_filtered[0]
 
     def get_network_by_name(self, network_name, location):
         networks = self.driver.list_networks(location=location)
-        if len(networks) == 0:
+        networks_filtered = \
+            list(filter(lambda x: x.name == network_name, networks))
+        if len(networks_filtered) == 0:
             raise NonRecoverableError("Could not find network %s" %
                                       network_name)
-        return list(filter(lambda x: x.name == network_name, networks))[0]
+        return networks_filtered[0]
 
     def is_server_active(self, server):
         return server.state == NodeState.RUNNING

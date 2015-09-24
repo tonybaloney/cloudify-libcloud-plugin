@@ -342,7 +342,7 @@ class Mapper(object):
         if self.core_provider == Provider.DIMENSIONDATA:
             return get_driver(self.provider)(connection_config['access_id'],
                                              connection_config['secret_key'],
-                                             connection_config['region_code'])
+                                             region=connection_config['region_code'])
 
     def get_server_client(self, config):
         if self.core_provider == Provider.EC2:
