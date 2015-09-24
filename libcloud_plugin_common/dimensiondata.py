@@ -78,12 +78,18 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
         self.driver.ex_disassociate_address(ip)
 
     def get_image_by_name(self, image_name, location):
-        return list(filter(lambda x: x.name == image_name,
-                           self.driver.list_images(location=location)))[0]
+        images = self.driver.list_images(location=location)
+        if len(images) == 0:
+            raise NonRecoverableError("Could not find image %s" % image_name)
+
+        return list(filter(lambda x: x.name == image_name, images))[0]
 
     def get_network_by_name(self, network_name, location):
-        return list(filter(lambda x: x.name == network_name,
-                           self.driver.list_networks(location=location)))[0]
+        networks = self.driver.list_networks(location=location)
+        if len(networks) == 0:
+            raise NonRecoverableError("Could not find network %s" %
+                                      network_name)
+        return list(filter(lambda x: x.name == network_name, networks))[0]
 
     def is_server_active(self, server):
         return server.state == NodeState.RUNNING
@@ -98,6 +104,9 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
         if 'location' in server_context:
             location = self.driver.ex_get_location_by_id(
                 server_context['location'])
+            if location is None:
+                raise NonRecoverableError("Could not find location %s" %
+                                          server_context['location'])
         else:
             raise NonRecoverableError("Location is a required parameter")
 
