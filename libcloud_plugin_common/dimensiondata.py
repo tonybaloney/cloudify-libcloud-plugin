@@ -33,8 +33,7 @@ class DimensionDataLibcloudServerClient(LibcloudServerClient):
                 return node
 
     def get_by_id(self, server_id):
-        nodes = self.driver.list_nodes(ex_node_ids=[server_id])
-        return nodes[0] if nodes is not None else None
+        return self.driver.ex_get_node_by_id(server_id)
 
     def start_server(self, server):
         self.driver.ex_start_node(server)
